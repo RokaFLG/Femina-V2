@@ -69,10 +69,10 @@ class Carrito{
       this.nombre = nombre;
   }
 }
-let j=0;
-arrayProductos[j++]= new Producto("Taza Magica",1200,15);
-arrayProductos[j++]= new Producto("Taza con dibujo",850,25);
-arrayProductos[j++]= new Producto("Taza con Foto",700,35);
+
+arrayProductos.push(new Producto("Taza Magica",1200,15));
+arrayProductos.push(new Producto("Taza con dibujo",850,25));
+arrayProductos.push(new Producto("Taza con Foto",700,35));
 
 
 function seleccionCarrito(taza) {
@@ -142,9 +142,9 @@ function calculaCompra(){
 function finalizar() {
 
     console.log("Los productos seleccionados son:");
-    for (let index = 0; index < arrayCarrito.length; index++) {
-      console.log("-"+arrayCarrito[index].nombre)
-    } 
+   arrayCarrito.forEach(e=> {
+    console.log(`-${e.nombre}`)
+   })
     alert(`Debera pagar un total de: $${(calculaCompra().toFixed(2))}`);  
 }
 function reiniciar(){
