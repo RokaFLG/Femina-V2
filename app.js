@@ -101,3 +101,4 @@ function reiniciar(){
     console.log("------------------------------");
    
 }
+console.log(document.getElementById("stock").value)
