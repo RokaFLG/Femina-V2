@@ -105,12 +105,3 @@ function reiniciar(){
    
 }
 
-const nCantidad = Object.values(carrito).reduce((acc,{cantidad})=> acc + cantidad,0)
-const nPrecio = Object.values(carrito).reduce((acc,{cantidad, precio})=> acc + cantidad * precio,0)
-templateFooter.querySelectorAll(`td`)[0].textContent = nCantidad
-templateFooter.querySelector(`span`).textContent = nPrecio
-
-
-const clone = templateFooter.cloneNode(true)
-fragment.appendChild(clone)
-footer.appendChild(fragment)
