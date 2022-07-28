@@ -33,7 +33,10 @@ function seleccionCarrito(taza) {
         agregarCarrito(arrayProductos[taza],arrayCarrito);
 
         alert("Taza Magica ha sido comprada");
-        console.log("Taza Magica ha sido comprada");
+       const tazas= ["Taza Magica ha sido comprada"]
+
+       const tazaMagica= JSON.stringify(tazas)
+       localStorage.setItem("tazas",tazaMagica)
       }
       console.log(arrayCarrito);
 
@@ -101,4 +104,13 @@ function reiniciar(){
     console.log("------------------------------");
    
 }
-console.log(document.getElementById("stock").innerHTML)
+
+const nCantidad = Object.values(carrito).reduce((acc,{cantidad})=> acc + cantidad,0)
+const nPrecio = Object.values(carrito).reduce((acc,{cantidad, precio})=> acc + cantidad * precio,0)
+templateFooter.querySelectorAll(`td`)[0].textContent = nCantidad
+templateFooter.querySelector(`span`).textContent = nPrecio
+
+
+const clone = templateFooter.cloneNode(true)
+fragment.appendChild(clone)
+footer.appendChild(fragment)
