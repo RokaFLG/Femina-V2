@@ -1,107 +1,139 @@
+const cards = document.getElementById('cards')
+const items = document.getElementById('items')
+const footer = document.getElementById('footer')
+const templateCard = document.getElementById('template-card').content
+const templateFooter = document.getElementById('template-footer').content
+const templateCarrito = document.getElementById('template-carrito').content
+const fragment = document.createDocumentFragment ()
+let carrito = {}
 
-let arrayProductos=[];
-let arrayCarrito =[];
-let peluche;
+document.addEventListener('DOMContentLoaded', () => {
+  fetchData()
+  if(localStorage.getItem('carrito')){
+    carrito = JSON.parse(localStorage.getItem('carrito'))
+    pintarCarrito()
+  }
+})
+cards.addEventListener('click', e => {
+  addCarrito(e)
+})
 
+items.addEventListener('click', e =>{
+  btnAccion(e)
+})
 
-class Producto{
-    constructor(nombre, precio, stock) {
-        this.precio = precio;
-        this.stock = stock;
-        this.nombre = nombre;
-    }
-}
-class Carrito{
-  constructor(nombre, precio) {
-      this.precio = precio;
-      this.nombre = nombre;
+const fetchData = async() => {
+  try {
+    const res = await fetch('app.json')
+    const data = await res.json()
+    //console.log(data)
+    pintarCards(data)
+  } catch (error) {
+    console.log(error);
   }
 }
 
-arrayProductos.push(new Producto("Taza Magica",1200,2));
-arrayProductos.push(new Producto("Taza con dibujo",850,4));
-arrayProductos.push(new Producto("Taza con Foto",700,6));
-
-
-function seleccionCarrito(taza) {
-  switch (taza) {
-    case 0:
-      if (arrayProductos[taza].stock < 1) {
-        alert("Se ha agotado el producto de Taza Magica, Si tiene dudas o consultas comuniquese con el centro de atencion al cliente");  
-      } else {
-        
-        agregarCarrito(arrayProductos[taza],arrayCarrito);
-
-        alert("Taza Magica ha sido comprada");
-       const tazas= ["Taza Magica ha sido comprada"]
-
-       const tazaMagica= JSON.stringify(tazas)
-       localStorage.setItem("tazas",tazaMagica)
-      }
-      console.log(arrayCarrito);
-
-      break;
-    case 1:
-      if (arrayProductos[taza].stock < 1) {
-        alert("Se ha agotado el producto de Taza con Dibujo, Si tiene dudas o consultas comuniquese con el centro de atencion al cliente");  
-      } else {
-        
-        agregarCarrito(arrayProductos[taza],arrayCarrito);
-        
-        alert("Taza con Dibujo ha sido comprada");
-        console.log("Taza con Dibujo ha sido comprada");
-      }
-      console.log(arrayCarrito);
-      
-      break;
-    case 2:
-      
-      if (arrayProductos[taza].stock < 1) {
-        alert("Se ha agotado el producto de Taza con foto, Si tiene dudas o consultas comuniquese con el centro de atencion al cliente");  
-      } else {
-        
-        agregarCarrito(arrayProductos[taza],arrayCarrito);
-        
-        alert("Taza con foto ha sido comprada");
-        console.log("Taza con foto ha sido comprada");
-      }
-      console.log(arrayCarrito);
-      
-      break;
-    default:
-        alert("error de producto")
-      break;
+const pintarCards = data => {
+  //console.log(data)
+  data.forEach(producto =>{
+    templateCard.querySelector('h5').textContent = producto.title
+    templateCard.querySelector('p').textContent = producto.precio
+    templateCard.querySelector('img').setAttribute("src", producto.thumbnailUrl)
+    templateCard.querySelector('.btn-dark').dataset.id = producto.id
+    const clone = templateCard.cloneNode(true)
+    fragment.appendChild(clone)
+  })
+  cards.appendChild(fragment)
+}
+const addCarrito = e => {
+  //console.log(e.target)
+  //console.log(e.target.classList.contains('btn-dark'));
+  if(e.target.classList.contains('btn-dark')){
+    e.target.parentElement
+    setCarrito(e.target.parentElement)
   }
+  e.stopPropagation()
 }
 
-function agregarCarrito(objeto,arrayCarrito) {
+const setCarrito = objeto =>{
+  //console.log(objeto);
+  const producto = {
+    id: objeto.querySelector('.btn-dark').dataset.id,title: objeto.querySelector('h5').textContent, precio: objeto.querySelector('p').textContent,cantidad: 1
+  }
 
-  let n =objeto.nombre
-  let p =objeto.precio;
-  const a = new Carrito(n,p);
-  arrayCarrito.push(a);
+  if(carrito.hasOwnProperty(producto.id)){
+    producto.cantidad = carrito[producto.id].cantidad + 1
+  }
+
+  carrito[producto.id] = {...producto}
+  pintarCarrito()
 }
 
-function calculaCompra(){
-  let monto=0;
-    for (let index = 0; index < arrayCarrito.length; index++) {
-      monto+= arrayCarrito[index].precio;
+const pintarCarrito = () => {
+  //console.log(carrito)
+  items.innerHTML = ''
+  Object.values(carrito).forEach(producto =>{
+    templateCarrito.querySelector('th').textContent = producto.id
+    templateCarrito.querySelectorAll('td')[0].textContent = producto.title
+    templateCarrito.querySelectorAll('td')[1].textContent = producto.cantidad
+    templateCarrito.querySelector('.btn-info').dataset.id = producto.id
+    templateCarrito.querySelector('.btn-danger').dataset.id = producto.id
+    templateCarrito.querySelector('span').textContent = producto.cantidad * producto.precio
+
+    const clone = templateCarrito.cloneNode(true)
+    fragment.appendChild(clone)
+  })
+  items.appendChild(fragment)
+
+  pintarFooter()
+
+  localStorage.setItem('carrito', JSON.stringify(carrito))
+}
+
+const pintarFooter = () =>{
+  footer.innerHTML = ''
+  if(Object.keys(carrito).length === 0){
+    footer.innerHTML = `
+    <th scope="row" colspan="5">Carrito vacío - comience a comprar!</th>
+    `
+    return
+  }
+
+  const nCantidad = Object.values(carrito).reduce((acc, { cantidad }) => acc + cantidad ,0)
+  const nPrecio = Object.values(carrito).reduce((acc, {cantidad, precio}) => acc + cantidad * precio ,0) 
+
+  templateFooter.querySelectorAll('td')[0].textContent = nCantidad
+  templateFooter.querySelector('span').textContent = nPrecio
+
+  const clone = templateFooter.cloneNode(true)
+  fragment.appendChild(clone)
+  footer.appendChild(fragment)
+
+  const btnVaciar = document.getElementById('vaciar-carrito')
+  btnVaciar.addEventListener('click', () =>{
+    carrito = {}
+    pintarCarrito()
+  })
+}
+
+
+const btnAccion = e => {
+  // Accion de aumentar
+  if(e.target.classList.contains('btn-info')){
+    //console.log(carrito[e.target.dataset.id]);
+    //carrito[e.target.dataset.id]
+    const producto = carrito[e.target.dataset.id]
+    producto.cantidad++
+    carrito[e.target.dataset.id] = {...producto}
+    pintarCarrito()
+  }
+  if(e.target.classList.contains('btn-danger')){
+    const producto = carrito[e.target.dataset.id]
+    producto.cantidad--
+    if(producto.cantidad === 0){
+      delete carrito[e.target.dataset.id]
     }
-    return monto;
+    pintarCarrito()
+  }
+  e.stopPropagation()
 }
-
-function finalizar() {
-
-    console.log("Los productos seleccionados son:");
-   arrayCarrito.forEach(e=> {
-    console.log(`-${e.nombre}`)
-   })
-    alert(`Debera pagar un total de: $${(calculaCompra().toFixed(2))}`);  
-}
-function reiniciar(){
-    
-    arrayCarrito =[];
-    console.log("------------------------------");
-   
-}
-
