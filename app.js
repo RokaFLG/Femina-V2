@@ -137,3 +137,40 @@ const btnAccion = e => {
   }
   e.stopPropagation()
 }
+const button = document.querySelector("#btn-alert")
+button.addEventListener("click", () => {
+  Swal.fire({
+    title: 'Ingresa Tu Usuario de GitHub',
+    input: 'text',
+    inputAttributes: {
+      autocapitalize: 'off'
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Aceptar',
+    showLoaderOnConfirm: true,
+    preConfirm: (login) => {
+      return fetch(`//api.github.com/users/${login}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(response.statusText)
+          }
+          return response.json()
+        })
+        .catch(error => {
+          Swal.showValidationMessage(
+            `Usuario Incorrecto: ${error}`
+          )
+        })
+    },
+    allowOutsideClick: () => !Swal.isLoading()
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: `${result.value.login} Has Ingresado Correctamente`,
+        imageUrl: result.value.avatar_url
+      })
+    }
+  })
+  
+
+})
